@@ -1,5 +1,5 @@
 class Train
-  attr_reader :type, :number
+  attr_reader :type, :number, :route
 
   def initialize(number, type, size)
     @number = number
@@ -7,6 +7,7 @@ class Train
     @size = size
     @speed = 0
     @vagon_count = 0
+    @route = []
   end
 
   def accelerate_speed
@@ -31,5 +32,29 @@ class Train
 
   def total_vagon
     @vagon_count
+  end
+
+  def add_route(route)
+    @route.push(route)
+    check
+  end
+
+  private
+
+  def check
+    test = []
+    list = @route[0].route_list.flatten
+    test.push(list.select { |station| station.train_list.include?(self) })
+    test.flatten!
+    puts "Массив TEST #{test}"
+    puts "Count TEST #{test.count}"
+
+    if test.empty?
+      puts "Поезд не принадлежит не одной станции"
+    elsif test.count == 1
+      puts "Поезд находится на станции #{test[0].name}"
+    elsif test.count > 1
+      puts "ВНИМАНИЕ! Поезд находится сразу на нескольких станциях!"
+    end
   end
 end
