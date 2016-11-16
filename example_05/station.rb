@@ -14,8 +14,8 @@ class Station
     @train_list
   end
 
-  def del_train
-    @train_list.delete_at(-1)
+  def del_train(train)
+    @train_list.delete(train)
   end
 
   def sorting_for_type

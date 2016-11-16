@@ -8,7 +8,7 @@ class Train
     @speed = 0
     @vagon_count = 0
     @route = []
-    @index = nil
+    @current_index = nil
     @there_is = false
   end
 
@@ -54,6 +54,22 @@ class Train
     end
   end
 
+  def next_station
+    return if @route.empty? || @current_index.nil? || @route[0].last_station.train_list.include?(self)
+
+    delete_self_in_current_station
+    list[@current_index + 1].add_train(self)
+    @current_index += 1
+  end
+
+  def prev_station
+    return if @route.empty? || @current_index.nil? || @current_index == 0
+
+    delete_self_in_current_station
+    list[@current_index - 1].add_train(self)
+    @current_index -= 1
+  end
+
   private
 
   def check
@@ -61,8 +77,6 @@ class Train
     list = @route[0].route_list.flatten
     test.push(list.select { |station| station.train_list.include?(self) })
     test.flatten!
-    puts "Массив TEST #{test}"
-    puts "Count TEST #{test.count}"
 
     if test.empty?
       puts "Поезд не принадлежит не одной станции"
@@ -72,5 +86,10 @@ class Train
     elsif test.count > 1
       puts "ВНИМАНИЕ! Поезд находится сразу на нескольких станциях!"
     end
+  end
+
+  def delete_self_in_current_station
+    list = @route[0].route_list.flatten
+    list[@current_index].del_train(self)
   end
 end
