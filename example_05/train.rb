@@ -9,7 +9,8 @@ class Train
     @vagon_count = 0
     @route = []
     @current_index = nil
-    @there_is = false
+    @on_station = false
+    @list = nil
   end
 
   def accelerate_speed
@@ -38,27 +39,22 @@ class Train
 
   def add_route(route)
     @route.push(route)
-    check
+    current_station
   end
 
   def current_station
     check
 
-    return if @there_is == false
+    return if @on_station == false
 
-    list = @route[0].route_list.flatten
-    puts "LIST = #{list}"
-
-    list.map.with_index do |st, i|
-      @current_index = i if st.train_list.include?(self)
-    end
+    init_current_index
   end
 
   def next_station
     return if @route.empty? || @current_index.nil? || @route[0].last_station.train_list.include?(self)
 
     delete_self_in_current_station
-    list[@current_index + 1].add_train(self)
+    @list[@current_index + 1].add_train(self)
     @current_index += 1
   end
 
@@ -66,30 +62,51 @@ class Train
     return if @route.empty? || @current_index.nil? || @current_index == 0
 
     delete_self_in_current_station
-    list[@current_index - 1].add_train(self)
+    @list[@current_index - 1].add_train(self)
     @current_index -= 1
+  end
+
+  def show_station
+    init_list
+    puts "Предыдущая станция #{@list[@current_index - 1].name}" unless @current_index == 0
+    puts "Текущая станция #{@list[@current_index].name}"
+
+    if @current_index < (@list.count - 1)
+      puts "Следующая станция #{@list[@current_index + 1].name}"
+    end
   end
 
   private
 
   def check
     test = []
-    list = @route[0].route_list.flatten
-    test.push(list.select { |station| station.train_list.include?(self) })
+    init_list
+    test.push(@list.select { |station| station.train_list.include?(self) })
     test.flatten!
 
     if test.empty?
       puts "Поезд не принадлежит не одной станции"
     elsif test.count == 1
       puts "Поезд находится на станции #{test[0].name}"
-      @there_is = true
+      @on_station = true
     elsif test.count > 1
       puts "ВНИМАНИЕ! Поезд находится сразу на нескольких станциях!"
     end
   end
 
   def delete_self_in_current_station
-    list = @route[0].route_list.flatten
-    list[@current_index].del_train(self)
+    init_list
+    @list[@current_index].del_train(self)
+  end
+
+  def init_list
+    @list = @route[0].route_list.flatten
+  end
+
+  def init_current_index
+    init_list
+    @list.map.with_index do |st, i|
+      @current_index = i if st.train_list.include?(self)
+    end
   end
 end
