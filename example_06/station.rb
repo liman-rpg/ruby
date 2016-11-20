@@ -11,6 +11,7 @@ class Station
 
   def initialize(name)
     @name = name
+    valid?
     @train_list = []
     @@count += 1
   end
@@ -35,5 +36,14 @@ class Station
     cargo = @train_list.select { |train| train.type == :c }
     puts "Кол-во грузовых поездов #{cargo.count}"
     cargo.each { |train| puts train.number }
+  end
+
+  private
+
+  def valid?
+    raise ArgumentError, "Name can't be blank" if @name.nil?
+    raise ArgumentError, "Input Name error. The Name is not String" unless @name.is_a?(String)
+    raise ArgumentError, "Name can't be blank" if @name.empty?
+    true
   end
 end
