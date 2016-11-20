@@ -13,9 +13,10 @@ class Train
   end
 
   def initialize(number, type, size)
-    @number = number.to_s
-    @type = type # :passenger and :cargo
+    @number = number
+    @type = type # passenger or cargo
     @size = size
+    valid?
     @speed = 0
     @vagon_list = Array.new(size) { |i| nil }
     @route = []
@@ -134,5 +135,18 @@ class Train
     @list.map.with_index do |st, i|
       @current_index = i if st.train_list.include?(self)
     end
+  end
+
+  def valid?
+    raise ArgumentError, "Number can't be blank" if @number.nil?
+    raise ArgumentError, "Input Number error. The Number is not String" unless @number.is_a?(String)
+    raise ArgumentError, "Number can't be blank" if @number.empty?
+    raise ArgumentError, "Type can't be blank" if @type.nil?
+    raise ArgumentError, "Input Type error. The Type is not Symbol" unless @type.is_a?(Symbol)
+    raise ArgumentError, "Input Type error. Use :p or :c" unless @type == :p || @type == :c
+    raise ArgumentError, "Size can't be blank" if @size.nil?
+    raise ArgumentError, "Input Size error. The Size is not Integer" unless @size.is_a?(Integer)
+    raise ArgumentError, "Input Size error. The Size must be greater than 0" if @size <= 0
+    true
   end
 end
