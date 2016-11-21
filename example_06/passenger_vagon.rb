@@ -10,15 +10,11 @@ class PassengerVagon < Vagon
   end
 
   def take_place
-    raise ArgumentError, "Do not have Free plases" if @free_places <= 0
-
-    @free_places -= 1
+    @free_places -= 1 if @free_places > 0
   end
 
   def free_place
-    raise ArgumentError, "Max count Free plases" unless @free_places < @max_places
-
-    @free_places += 1
+    @free_places += 1 if @free_places < @max_places
   end
 
   def size_take_place
