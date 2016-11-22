@@ -2,7 +2,7 @@ require_relative 'manufacturer'
 
 class Train
   include Manufacturer
-  attr_reader :type, :number, :route, :current_index
+  attr_reader :number, :route, :current_index
 
   class << self
     @@all_train = {}
@@ -12,9 +12,9 @@ class Train
     end
   end
 
-  def initialize(number, type, size)
+  def initialize(number, size)
     @number = number
-    @type = type # passenger or cargo
+    # @type = type # passenger or cargo
     @size = size
     valid?
     @speed = 0
@@ -141,9 +141,9 @@ class Train
     raise ArgumentError, "Number can't be blank" if @number.nil?
     raise ArgumentError, "Input Number error. The Number is not String" unless @number.is_a?(String)
     raise ArgumentError, "Number can't be blank" if @number.empty?
-    raise ArgumentError, "Type can't be blank" if @type.nil?
-    raise ArgumentError, "Input Type error. The Type is not Symbol" unless @type.is_a?(Symbol)
-    raise ArgumentError, "Input Type error. Use :p or :c" unless @type == :p || @type == :c
+    # raise ArgumentError, "Type can't be blank" if @type.nil?
+    # raise ArgumentError, "Input Type error. The Type is not Symbol" unless @type.is_a?(Symbol)
+    # raise ArgumentError, "Input Type error. Use :p or :c" unless @type == :p || @type == :c
     raise ArgumentError, "Size can't be blank" if @size.nil?
     raise ArgumentError, "Input Size error. The Size is not Integer" unless @size.is_a?(Integer)
     raise ArgumentError, "Input Size error. The Size must be greater than 0" if @size <= 0
