@@ -17,6 +17,8 @@ class Station
   end
 
   def add_train(train)
+    raise ArgumentError, "Input Train error. The Train is not Train::Class " unless train.is_a?(PassengerTrain) || train.is_a?(CargoTrain)
+
     @train_list.push(train)
   end
 
@@ -25,6 +27,8 @@ class Station
   end
 
   def del_train(train)
+    raise ArgumentError, "Input Train error. The Train is not Train::Class " unless train.is_a?(PassengerTrain) || train.is_a?(CargoTrain)
+
     @train_list.delete(train)
   end
 
