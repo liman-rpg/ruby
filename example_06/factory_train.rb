@@ -11,6 +11,6 @@ class FactoryTrain
     else
       raise ArgumentError, "This type #{type} of train is not existed!"
     end
-    return train
+    train
   end
 end
