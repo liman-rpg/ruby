@@ -1,9 +1,11 @@
 require_relative "factory_train"
 require_relative "station"
 require_relative "route"
+require_relative "passenger_vagon"
+require_relative "cargo_vagon"
 
 class Main
-  attr_accessor :commands, :counts, :train
+  attr_accessor :commands, :counts, :train, :vagon
   def initialize
     @commands =
       {
@@ -11,17 +13,16 @@ class Main
         '2' => ['Create Train', ['Number', 'Type', 'Size']],
         '3' => ['Create Station', ['Name']],
         '4' => ['Create Route', ['Name', 'First station', 'Last station']],
-        '5' => ['Show', []],
+        '5' => ['Create Vagon', ['Name', 'Type', 'Size']],
+        '9' => ['Show', []],
         '0' => ['Exit', []]
       }
     @train = {}
     @station = {}
     @route = {}
-    # @counts = []
+    @vagon = {}
     @inputs = []
-    # init_counts
     @print_command = lambda do |k, v|
-      # puts "#{k}"
       if v.any?
         i = 1
         v.each do | item |
@@ -50,6 +51,8 @@ class Main
           elsif command_name == '4'
             create_route(command_name)
           elsif command_name == '5'
+            create_vagon(command_name)
+          elsif command_name == '9'
             show
           end
           break if command_name == '0'
@@ -58,25 +61,17 @@ class Main
         end
       rescue Exception => e
         puts e.message
+        @inputs = []
       end
     end
   end
 
-  # def init_counts
-  #   @commands.each_value { |v| @counts << v[1].size }
-  # end
-
   protected
+
   def valid?
     return false if @input_params == nil
     return false unless @input_params.any?
     return false unless @commands.has_key?(@input_params[0])
-    # command_param = @commands[@input_params[0]][1]
-    # return true if command_param.empty?
-    # return true if(command_param.size == (@input_params.size - 1) )
-    # puts "You entered wrong params for command:"
-    # @print_command.call(@input_params[0], command_param)
-    # return false
     true
   end
 
@@ -120,6 +115,46 @@ class Main
     @inputs = []
   end
 
+  def create_vagon(e)
+    require_params(e)
+    vagon_name = @inputs[0]
+    vagon_type = @inputs[1]
+    vagon_size = @inputs[2]
+
+    raise ArgumentError, "Vagon with name #{vagon_name} is existed!" if @vagon.has_key?(vagon_name)
+
+    if vagon_type == 'p'
+      @vagon[vagon_name] = PassengerVagon.new(vagon_size.to_i)
+    elsif vagon_type == 'c'
+      @vagon[vagon_name] = CargoVagon.new(vagon_size.to_i)
+    else
+      raise ArgumentError, "Vagon type error !!!"
+    end
+
+    puts "Add Vagon #{vagon_name}"
+    @inputs = []
+  end
+
+  def add_train_in_station(e)
+    require_params(e)
+    vagon_name = @inputs[0]
+    vagon_type = @inputs[1]
+    vagon_size = @inputs[2]
+
+    raise ArgumentError, "Vagon with name #{vagon_name} is existed!" if @vagon.has_key?(vagon_name)
+
+    if vagon_type == 'p'
+      @vagon[vagon_name] = PassengerVagon.new(vagon_size.to_i)
+    elsif vagon_type == 'c'
+      @vagon[vagon_name] = CargoVagon.new(vagon_size.to_i)
+    else
+      raise ArgumentError, "Vagon type error !!!"
+    end
+
+    puts "Add Vagon #{vagon_name}"
+    @inputs = []
+  end
+
   def show
     puts "Список Trains :"
     @train.each do |train_number, obj|
@@ -137,6 +172,17 @@ class Main
 
     puts "Список Routes :"
     @route.each_key {|k| puts "#{k}"}
+
+    puts "Список Vagons :"
+    @vagon.each do |vagon_name, obj|
+      if obj.is_a?(PassengerVagon)
+        puts "Пассажирские :"
+        puts "#{vagon_name}"
+      elsif obj.is_a?(CargoVagon)
+        puts "Грузовые :"
+        puts "#{vagon_name}"
+      end
+    end
   end
 
   def help
@@ -159,5 +205,4 @@ class Main
       end
     end
   end
-
 end
