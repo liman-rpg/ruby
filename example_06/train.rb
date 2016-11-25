@@ -39,6 +39,8 @@ class Train
   end
 
   def add_vagon(vagon)
+    raise ArgumentError, "Vagon is existed !" if @vagon_list.include?(vagon)
+
     i = @vagon_list.index(nil)
 
     unless i.nil?
