@@ -5,7 +5,7 @@ require_relative "passenger_vagon"
 require_relative "cargo_vagon"
 
 class Main
-  attr_accessor :commands, :counts, :train, :vagon
+  attr_accessor :commands, :counts, :train, :vagon, :station
   def initialize
     @commands =
       {
@@ -14,6 +14,7 @@ class Main
         '3' => ['Create Station', ['Name']],
         '4' => ['Create Route', ['Name', 'First station', 'Last station']],
         '5' => ['Create Vagon', ['Name', 'Type', 'Size']],
+        '6' => ['Add Train in Station', ['Select Station', 'Select Train']],
         '9' => ['Show', []],
         '0' => ['Exit', []]
       }
@@ -52,6 +53,8 @@ class Main
             create_route(command_name)
           elsif command_name == '5'
             create_vagon(command_name)
+          elsif command_name == '6'
+            add_train_in_station
           elsif command_name == '9'
             show
           end
@@ -135,23 +138,37 @@ class Main
     @inputs = []
   end
 
-  def add_train_in_station(e)
-    require_params(e)
-    vagon_name = @inputs[0]
-    vagon_type = @inputs[1]
-    vagon_size = @inputs[2]
+  def add_train_in_station
+    raise ArgumentError, "Station HASH empty" if @station.empty?
+    raise ArgumentError, "Train HASH empty" if @train.empty?
 
-    raise ArgumentError, "Vagon with name #{vagon_name} is existed!" if @vagon.has_key?(vagon_name)
+    i_st = 1
+    i_tr = 1
+    stations = {}
+    trains = {}
 
-    if vagon_type == 'p'
-      @vagon[vagon_name] = PassengerVagon.new(vagon_size.to_i)
-    elsif vagon_type == 'c'
-      @vagon[vagon_name] = CargoVagon.new(vagon_size.to_i)
-    else
-      raise ArgumentError, "Vagon type error !!!"
+    puts "Select Station :"
+    @station.each_pair do |k, v|
+      puts "#{i_st} -- > #{k}"
+      stations[i_st] = v
+      i_st += 1
     end
+    selected_station = gets.chomp.to_i
 
-    puts "Add Vagon #{vagon_name}"
+    puts "Select Train :"
+    @train.each_pair do |k, v|
+      puts "#{i_tr} -- > #{k}"
+      trains[i_tr] = v
+      i_tr += 1
+    end
+    selected_train = gets.chomp.to_i
+
+    raise ArgumentError, "Input Select Station not valid" if selected_station.nil? || selected_station <= 0 || selected_station > i_st
+    raise ArgumentError, "Input Select Station not valid" if selected_train.nil? || selected_train <= 0 || selected_train > i_tr
+
+    stations[selected_station].add_train(trains[selected_train])
+
+    puts "Add Train #{trains[selected_train].number} in Station #{stations[selected_station].name}"
     @inputs = []
   end
 
@@ -159,28 +176,34 @@ class Main
     puts "Список Trains :"
     @train.each do |train_number, obj|
       if obj.is_a?(PassengerTrain)
-        puts "Пассажирские :"
-        puts "#{train_number}"
+        puts "  Пассажирские :"
+        puts "    #{train_number}"
       elsif obj.is_a?(CargoTrain)
-        puts "Грузовые :"
-        puts "#{train_number}"
+        puts "  Грузовые :"
+        puts "    #{train_number}"
       end
     end
 
     puts "Список Stations :"
-    @station.each_key {|k| puts "#{k}"}
+    @station.each do |k, v|
+      puts "  #{k}"
+      unless v.train_list.empty?
+        puts "    содержит поезда:"
+        v.train_list.each_with_index {|obj, i| puts "      #{i + 1} -- > #{obj.number}"}
+      end
+    end
 
     puts "Список Routes :"
-    @route.each_key {|k| puts "#{k}"}
+    @route.each_key {|k| puts "  #{k}"}
 
     puts "Список Vagons :"
     @vagon.each do |vagon_name, obj|
       if obj.is_a?(PassengerVagon)
-        puts "Пассажирские :"
-        puts "#{vagon_name}"
+        puts "  Пассажирские :"
+        puts "    #{vagon_name}"
       elsif obj.is_a?(CargoVagon)
-        puts "Грузовые :"
-        puts "#{vagon_name}"
+        puts "  Грузовые :"
+        puts "    #{vagon_name}"
       end
     end
   end
@@ -190,6 +213,17 @@ class Main
     @commands.each { |k,v| puts "#{k} --> #{v[0]}" }
     puts '_____________________'
   end
+
+  # def select(hash_obj)
+  #   items = {}
+  #   i = 1
+
+  #   hash_obj.each do |k, v|
+  #     puts "#{i} -- > #{k}"
+  #     items[i] = v
+  #     i += 1
+  #   end
+  # end
 
   def require_params(iter)
     @print_command.call(@input_params[0], @commands[@input_params[0]][1])
