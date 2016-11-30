@@ -3,8 +3,10 @@ require_relative "station"
 require_relative "route"
 require_relative "passenger_vagon"
 require_relative "cargo_vagon"
+require_relative "select"
 
 class Main
+  # extend Select
   attr_accessor :commands, :counts, :train, :vagon, :station
   def initialize
     @commands =
@@ -31,6 +33,12 @@ class Main
           i += 1
         end
       end
+    end
+    @select = lambda do |k, v|
+      i ||= 1
+      puts "#{i} -- > #{k}"
+      stations_f[i] = v
+      i += 1
     end
   end
 
@@ -103,17 +111,39 @@ class Main
   end
 
   def create_route(e)
-    puts "Список Stations :"
-    @station.each_key {|k| puts "#{k}"}
+    raise ArgumentError, "Station HASH empty" if @station.empty?
+    raise ArgumentError, "Station HASH have less 2 object" if @station.length < 2
 
-    require_params(e)
-    route_name = @inputs[0]
-    first_station = @inputs[1]
-    last_station = @inputs[2]
+    i_f = 1
+    i_l = 1
+    stations_f = {}
+    stations_l = {}
 
+    @print_command.call(@input_params[0], @commands[@input_params[0]][1])
+    route_name = gets.chomp
+
+    puts "Select First Station :"
+    @station.each_pair do |k, v|
+      puts "#{i_f} -- > #{k}"
+      stations_f[i_f] = v
+      i_f += 1
+    end
+    first_station = gets.chomp.to_i
+
+    puts "Select Last Station :"
+    @station.each_pair do |k, v|
+      puts "#{i_l} -- > #{k}"
+      stations_l[i_l] = v
+      i_l += 1
+    end
+    last_station = gets.chomp.to_i
+    puts "#{stations_l}"
+
+    raise ArgumentError, "Input Select First Station not valid" if first_station.nil? || first_station <= 0 || first_station > i
+    raise ArgumentError, "Input Select Second Station not valid" if last_station.nil? || last_station <= 0 || last_station > i
     raise ArgumentError, "Route with name #{route_name} is existed!" if @route.has_key?(route_name)
 
-    @route[route_name] = Route.new(@station[first_station], @station[last_station])
+    @route[route_name] = Route.new(stations_f[first_station], stations_l[last_station])
     puts "Add Route #{route_name}"
     @inputs = []
   end
@@ -142,33 +172,17 @@ class Main
     raise ArgumentError, "Station HASH empty" if @station.empty?
     raise ArgumentError, "Train HASH empty" if @train.empty?
 
-    i_st = 1
-    i_tr = 1
-    stations = {}
-    trains = {}
-
     puts "Select Station :"
-    @station.each_pair do |k, v|
-      puts "#{i_st} -- > #{k}"
-      stations[i_st] = v
-      i_st += 1
-    end
+    select(@station)
     selected_station = gets.chomp.to_i
 
     puts "Select Train :"
-    @train.each_pair do |k, v|
-      puts "#{i_tr} -- > #{k}"
-      trains[i_tr] = v
-      i_tr += 1
-    end
+    select(@train)
     selected_train = gets.chomp.to_i
 
-    raise ArgumentError, "Input Select Station not valid" if selected_station.nil? || selected_station <= 0 || selected_station > i_st
-    raise ArgumentError, "Input Select Station not valid" if selected_train.nil? || selected_train <= 0 || selected_train > i_tr
+    select(@station, selected_station).add_train(select(@train, selected_train))
 
-    stations[selected_station].add_train(trains[selected_train])
-
-    puts "Add Train #{trains[selected_train].number} in Station #{stations[selected_station].name}"
+    puts "Add Train #{select(@train, selected_train).number} in Station #{select(@station, selected_station).name}"
     @inputs = []
   end
 
@@ -214,17 +228,6 @@ class Main
     puts '_____________________'
   end
 
-  # def select(hash_obj)
-  #   items = {}
-  #   i = 1
-
-  #   hash_obj.each do |k, v|
-  #     puts "#{i} -- > #{k}"
-  #     items[i] = v
-  #     i += 1
-  #   end
-  # end
-
   def require_params(iter)
     @print_command.call(@input_params[0], @commands[@input_params[0]][1])
       i = 0
@@ -240,3 +243,25 @@ class Main
     end
   end
 end
+
+ def select(obj,*arg)
+    items = {}
+    i = 1
+    integer = arg[0] || nil
+
+    if integer
+      obj.each_value do |v|
+        items[i] = v
+        i += 1
+      end
+      raise ArgumentError, "Two argument less 0" if integer < 1
+      raise ArgumentError, "Two argument then items.length" if integer > items.length
+      return items[integer]
+    else
+      obj.each do |k, v|
+        puts "#{i} -- > #{k}"
+        items[i] = v
+        i += 1
+      end
+    end
+  end
