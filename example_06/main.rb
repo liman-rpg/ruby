@@ -3,10 +3,8 @@ require_relative "station"
 require_relative "route"
 require_relative "passenger_vagon"
 require_relative "cargo_vagon"
-require_relative "select"
 
 class Main
-  # extend Select
   attr_accessor :commands, :counts, :train, :vagon, :station
   def initialize
     @commands =
@@ -33,12 +31,6 @@ class Main
           i += 1
         end
       end
-    end
-    @select = lambda do |k, v|
-      i ||= 1
-      puts "#{i} -- > #{k}"
-      stations_f[i] = v
-      i += 1
     end
   end
 
@@ -114,38 +106,24 @@ class Main
     raise ArgumentError, "Station HASH empty" if @station.empty?
     raise ArgumentError, "Station HASH have less 2 object" if @station.length < 2
 
-    i_f = 1
-    i_l = 1
-    stations_f = {}
-    stations_l = {}
-
     @print_command.call(@input_params[0], @commands[@input_params[0]][1])
     route_name = gets.chomp
 
     puts "Select First Station :"
-    @station.each_pair do |k, v|
-      puts "#{i_f} -- > #{k}"
-      stations_f[i_f] = v
-      i_f += 1
-    end
+    select(@station)
     first_station = gets.chomp.to_i
 
     puts "Select Last Station :"
-    @station.each_pair do |k, v|
-      puts "#{i_l} -- > #{k}"
-      stations_l[i_l] = v
-      i_l += 1
-    end
+    select(@station)
     last_station = gets.chomp.to_i
-    puts "#{stations_l}"
 
-    raise ArgumentError, "Input Select First Station not valid" if first_station.nil? || first_station <= 0 || first_station > i
-    raise ArgumentError, "Input Select Second Station not valid" if last_station.nil? || last_station <= 0 || last_station > i
-    raise ArgumentError, "Route with name #{route_name} is existed!" if @route.has_key?(route_name)
+    raise ArgumentError,
+      "Route with name #{route_name} is existed!" if @route.has_key?(route_name)
 
-    @route[route_name] = Route.new(stations_f[first_station], stations_l[last_station])
+    @route[route_name] =
+      Route.new(select(@station,first_station), select(@station, last_station))
+
     puts "Add Route #{route_name}"
-    @inputs = []
   end
 
   def create_vagon(e)
@@ -183,7 +161,6 @@ class Main
     select(@station, selected_station).add_train(select(@train, selected_train))
 
     puts "Add Train #{select(@train, selected_train).number} in Station #{select(@station, selected_station).name}"
-    @inputs = []
   end
 
   def show
@@ -230,7 +207,8 @@ class Main
 
   def require_params(iter)
     @print_command.call(@input_params[0], @commands[@input_params[0]][1])
-      i = 0
+    i = 0
+
     loop do
       begin
         @inputs.push(gets.chomp)
@@ -254,8 +232,11 @@ end
         items[i] = v
         i += 1
       end
-      raise ArgumentError, "Two argument less 0" if integer < 1
-      raise ArgumentError, "Two argument then items.length" if integer > items.length
+      raise ArgumentError,
+        "Your choice in 'Select' is less than 1 !" if integer < 1
+      raise ArgumentError,
+        "Your choice in 'Select' of more then 'Select' - menu !" if integer > items.length
+
       return items[integer]
     else
       obj.each do |k, v|
